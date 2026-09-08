@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RecipeMatcher.Web.Data;
+using RecipeMatcher.Web.Models;
 
 namespace RecipeMatcher.Web.Controllers;
 
@@ -14,4 +15,20 @@ public class RecipesController(AppDbContext dbContext) : Controller
 
         return View(recipes);
     }
+
+    [HttpGet]
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(Recipe recipe)
+    {
+        dbContext.Recipes.Add(recipe);
+        await dbContext.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
+    }
 }
+
