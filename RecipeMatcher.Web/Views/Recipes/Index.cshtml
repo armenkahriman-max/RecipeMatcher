@@ -1,11 +1,14 @@
-@model IReadOnlyList<Recipe>
+@model List<Recipe>
 
 <h1>Recipes</h1>
 
 <ul>
     @foreach (var recipe in Model)
     {
-        <li>@recipe.Name, @recipe.PreparationMinutes minutes</li>
+        <p>
+            @recipe.Name
+            <a asp-action="Details" asp-route-id="@recipe.Id">Details</a>
+        </p>
     }
 </ul>
 

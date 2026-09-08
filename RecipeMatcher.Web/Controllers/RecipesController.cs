@@ -29,11 +29,22 @@ public class RecipesController(AppDbContext dbContext) : Controller
         {
             return View(recipe);
         }
-        
+
         dbContext.Recipes.Add(recipe);
         await dbContext.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
+    }
+
+    public async Task<ActionResult> Details(int id)
+    {
+        var recipe = await dbContext.Recipes.FindAsync(id);
+        if (recipe is null)
+        {
+            return NotFound();
+        }
+
+        return View(recipe);
     }
 }
 
