@@ -25,6 +25,11 @@ public class RecipesController(AppDbContext dbContext) : Controller
     [HttpPost]
     public async Task<IActionResult> Create(Recipe recipe)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(recipe);
+        }
+        
         dbContext.Recipes.Add(recipe);
         await dbContext.SaveChangesAsync();
 
