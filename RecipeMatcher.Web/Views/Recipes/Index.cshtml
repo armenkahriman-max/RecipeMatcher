@@ -8,6 +8,8 @@
         <p>
             @recipe.Name
             <a asp-action="Details" asp-route-id="@recipe.Id">Details</a>
+            <a asp-action="Edit" asp-route-id="@recipe.Id">Edit</a>
+            <a asp-action="Delete" asp-route-id="@recipe.Id">Delete</a>
         </p>
     }
 </ul>
