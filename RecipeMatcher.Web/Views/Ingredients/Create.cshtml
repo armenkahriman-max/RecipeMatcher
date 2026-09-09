@@ -1,0 +1,16 @@
+@model Ingredient
+
+<div asp-validation-summary="ModelOnly"></div>
+
+<form asp-action="Create" method="post">
+    <label asp-for="Name"></label>
+    <input asp-for="Name" />
+    <span asp-validation-for="Name"></span>
+
+    <button type="submit">Save</button>
+    <a asp-action="Index">Back to list</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
