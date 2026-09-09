@@ -9,4 +9,9 @@ public class Ingredient
     [Required]
     [StringLength(50)]
     public string Name { get; set; } = "";
+
+    public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
+    
+
+    
 }

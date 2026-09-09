@@ -3,4 +3,12 @@
 <h1>@Model.Name</h1>
 <p>@Model.PreparationMinutes minutes</p>
 
-<a asp-action=""Index">Back to list</a>
+<h2>Ingredients</h2>
+<ul>
+    @foreach (var recipeIngredient in Model.RecipeIngredients)
+    {
+        <li>@recipeIngredient.Ingredient.Name</li>
+    }
+</ul>
+
+<a asp-action="" Index">Back to list</a>
