@@ -36,7 +36,7 @@ public class RecipesController(AppDbContext dbContext) : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    public async Task<ActionResult> Details(int id)
+    public async Task<IActionResult> Details(int id)
     {
         var recipe = await dbContext.Recipes.FindAsync(id);
         if (recipe is null)
@@ -46,5 +46,46 @@ public class RecipesController(AppDbContext dbContext) : Controller
 
         return View(recipe);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var recipe = await dbContext.Recipes.FindAsync(id);
+
+        if (recipe is null)
+        {
+            return NotFound();
+        }
+        return View(recipe);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Edit(int id, Recipe recipe)
+    {
+        if (id != recipe.Id)
+        {
+            return NotFound();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(recipe);
+        }
+
+        var existing = await dbContext.Recipes.FindAsync(id);
+
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        existing.Name = recipe.Name;
+        existing.PreparationMinutes = recipe.PreparationMinutes;
+
+        await dbContext.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
+    }
+
 }
 
