@@ -1,4 +1,4 @@
-@model Recipe
+@model RecipeMatcher.Web.Models.ViewModel.EditRecipeViewModel
 
 <div asp-validation-summary="ModelOnly"></div>
 
@@ -15,6 +15,22 @@
         <label asp-for="PreparationMinutes"></label>
         <input asp-for="PreparationMinutes" />
         <span asp-validation-for="PreparationMinutes"></span>
+    </div>
+    <div>
+        <p>Ingredients</p>
+
+        @foreach ( var ingredient in Model.Ingredients)
+        {
+            <div>
+                <label>
+                    <input type ="checkbox"
+                    name="IngredientIds"
+                    value="@ingredient.Id"
+                    checked="@ingredient.Selected" />
+                    @ingredient.Name
+                </label>
+            </div>
+        }
     </div>
 
     <button type="submit">Save</button>
