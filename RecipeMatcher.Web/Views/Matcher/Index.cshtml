@@ -1,0 +1,29 @@
+@model RecipeMatcher.Web.Models.ViewModel.MatcherViewModel
+
+<h1>Chose pantry</h1>
+
+<form asp-action="Index" method="post">
+    <div>
+        @foreach (var ingredient in Model.Ingredients)
+        {
+            <div>
+                <label>
+                    <input type="checkbox" name="ingredientIds" value="@ingredient.Id" checked="@ingredient.Selected" />
+                    @ingredient.Name
+                </label>
+            </div>
+        }
+    </div>
+
+    <button type="submit">Use these ingredients</button>
+</form>
+
+@if (Model.IngredientIds.Length > 0)
+{
+    <h2>Selected IDs</h2>
+    <p>@string.Join(",", Model.IngredientIds)</p>
+}
+else if (Context.Request.Method == "POST")
+{
+    <p>No ingredients selected.</p>
+}
