@@ -43,13 +43,13 @@ public class IngredientsController(AppDbContext dbContext) : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
-        var ingredit = await dbContext.Ingredients.FindAsync(id);
+        var ingredient = await dbContext.Ingredients.FindAsync(id);
 
-        if (ingredit is null)
+        if (ingredient is null)
         {
             return NotFound();
         }
-        return View(ingredit);
+        return View(ingredient);
     }
 
     [HttpPost]

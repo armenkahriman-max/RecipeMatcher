@@ -1,6 +1,6 @@
 @model RecipeMatcher.Web.Models.ViewModel.MatcherViewModel
 
-<h1>Chose pantry</h1>
+<h1>Choose pantry</h1>
 
 <form asp-action="Index" method="post">
     <div>
@@ -26,4 +26,25 @@
 else if (Context.Request.Method == "POST")
 {
     <p>No ingredients selected.</p>
+}
+
+@if (Context.Request.Method == "POST")
+{
+    <h2>Matches</h2>
+
+    @if (!Model.Matches.Any())
+    {
+        <p>No full matches.</p>
+    }
+    else 
+    {
+        @foreach (var recipe in Model.Matches)
+        {
+            <article>
+                <h3>@recipe.Name</h3>
+                <p>Preparation time: @recipe.PreparationTime minutes</p>
+                <p>ingredients: @string.Join(",", recipe.Ingredients)</p>
+            </article>
+        }
+    }
 }

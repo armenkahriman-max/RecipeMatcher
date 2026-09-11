@@ -19,16 +19,33 @@ public class MatcherController(AppDbContext dbContext) : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Index(int[]? ingredientIds)
+    public async Task<IActionResult> Index(List<int> ingredientIds)
     {
-        ingredientIds ??= [];
+        ingredientIds ??= new List<int>();
+
+        var matches = await dbContext.Recipes
+        .Include(recipe => recipe.RecipeIngredients)
+        .ThenInclude(ri => ri.Ingredient)
+        .Where(recipe =>
+        !recipe.RecipeIngredients.Any(ri =>
+        !ingredientIds.Contains(ri.IngredientId)))
+        .Select(recipe => new MatchedRecipeViewModel
+        {
+
+            Name = recipe.Name,
+            PreparationTime = recipe.PreparationMinutes,
+            Ingredients = recipe.RecipeIngredients
+        .Select(ri => ri.Ingredient.Name)
+        .ToList()
+        })
+        .ToListAsync();
 
         var model = new MatcherViewModel
         {
-            IngredientIds = ingredientIds,
-            Ingredients = await GetIngredientOptionsAsync(ingredientIds)
+            IngredientIds = ingredientIds.ToArray(),
+            Ingredients = await GetIngredientOptionsAsync(ingredientIds.ToArray()),
+            Matches = matches
         };
-
         return View(model);
     }
 

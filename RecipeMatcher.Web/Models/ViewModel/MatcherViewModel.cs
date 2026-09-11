@@ -5,4 +5,6 @@ public class MatcherViewModel
     public IReadOnlyList<IngredientOptionViewModel> Ingredients { get; set; } = [];
 
     public int[] IngredientIds { get; set; } = [];
+
+    public IReadOnlyList<MatchedRecipeViewModel> Matches { get; set; } = [];
 }

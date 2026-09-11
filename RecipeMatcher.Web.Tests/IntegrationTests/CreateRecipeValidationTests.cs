@@ -70,6 +70,5 @@ public class CreateRecipeValidationTests : IClassFixture<CustomWebApplicationFac
 
         Assert.True(match.Success, "Create page did not contain an antiforgery token.");
         return match.Groups[1].Value;
-
     }
 }
