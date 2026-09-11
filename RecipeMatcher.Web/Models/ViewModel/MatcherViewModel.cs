@@ -6,5 +6,5 @@ public class MatcherViewModel
 
     public int[] IngredientIds { get; set; } = [];
 
-    public IReadOnlyList<MatchedRecipeViewModel> Matches { get; set; } = [];
+    public IReadOnlyList<MatchedResultViewModel> Results { get; set; } = [];
 }

@@ -23,30 +23,43 @@ public class MatcherController(AppDbContext dbContext) : Controller
     {
         ingredientIds ??= new List<int>();
 
-        var matches = await dbContext.Recipes
-        .Include(recipe => recipe.RecipeIngredients)
-        .ThenInclude(ri => ri.Ingredient)
-        .Where(recipe =>
-        !recipe.RecipeIngredients.Any(ri =>
-        !ingredientIds.Contains(ri.IngredientId)))
-        .Select(recipe => new MatchedRecipeViewModel
+        var queryResults = await dbContext.Recipes
+        .Select(recipe => new
         {
-
-            Name = recipe.Name,
-            PreparationTime = recipe.PreparationMinutes,
-            Ingredients = recipe.RecipeIngredients
-        .Select(ri => ri.Ingredient.Name)
-        .ToList()
+            recipe.Id,
+            recipe.Name,
+            recipe.PreparationMinutes,
+            MissingNames = recipe.RecipeIngredients
+            .Where(ri => !ingredientIds.Contains(ri.IngredientId))
+            .Select(ri => ri.Ingredient.Name)
+            .ToList(),
+            MissingCount = recipe.RecipeIngredients
+            .Count(ri => !ingredientIds.Contains(ri.IngredientId))
         })
+        .OrderBy(r => r.MissingCount)
+        .ThenBy(r => r.Name)
         .ToListAsync();
+
+        var results = queryResults
+        .Select(r => new MatchedResultViewModel
+        {
+            RecipeId = r.Id,
+            Name = r.Name,
+            PreparationMinutes = r.PreparationMinutes,
+            MissingIngredients = r.MissingNames,
+            MissingCount = r.MissingCount
+        })
+        .ToList();
 
         var model = new MatcherViewModel
         {
             IngredientIds = ingredientIds.ToArray(),
             Ingredients = await GetIngredientOptionsAsync(ingredientIds.ToArray()),
-            Matches = matches
+            Results = results
         };
         return View(model);
+
+
     }
 
     private async Task<IReadOnlyList<IngredientOptionViewModel>> GetIngredientOptionsAsync(

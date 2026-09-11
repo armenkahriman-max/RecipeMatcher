@@ -32,19 +32,21 @@ else if (Context.Request.Method == "POST")
 {
     <h2>Matches</h2>
 
-    @if (!Model.Matches.Any())
+    @foreach (var recipe in Model.Results)
     {
-        <p>No full matches.</p>
+        <article>
+            <h3>@recipe.Name</h3>
+            <p>Preparation time: @recipe.PreparationMinutes minutes</p>
+
+            @if (recipe.MissingCount == 0)
+            {
+                <p>You have everything</p>
+            }
+            else
+            {
+                <p>Missing: @string.Join(",", recipe.MissingIngredients)</p>
+            }
+        </article>
     }
-    else 
-    {
-        @foreach (var recipe in Model.Matches)
-        {
-            <article>
-                <h3>@recipe.Name</h3>
-                <p>Preparation time: @recipe.PreparationTime minutes</p>
-                <p>ingredients: @string.Join(",", recipe.Ingredients)</p>
-            </article>
-        }
-    }
+
 }
