@@ -6,7 +6,8 @@
 
 <form asp-action="Delete" method="post">
     <input type="hidden" asp-for="Id" />
-    <button type="submit">Delete</button>
+    <div class="btn-row">
+        <button type="submit" class="btn">Delete</button>
+        <a class="btn" asp-action="Index">Cancel</a>
+    </div>
 </form>
-
-<a asp-action="Index">Cancel</a>

@@ -2,14 +2,16 @@
 
 <h1>Ingredients</h1>
 
-<a asp-action="Create">Add Ingredients</a>
-
+<p>
+    <a class="btn" asp-action="Create">Add ingredient</a>
+</p>
 
 @foreach (var ingredient in Model)
 {
+   
     <p>
         @ingredient.Name
-        <a asp-action="Edit" asp-route-id="@ingredient.Id">Edit</a>
-        <a asp-action="Delete" asp-route-id="@ingredient.Id">Delete</a>
+        <a class="btn" asp-action="Edit" asp-route-id="@ingredient.Id">Edit</a>
+        <a class="btn" asp-action="Delete" asp-route-id="@ingredient.Id">Delete</a>
     </p>
 }

@@ -3,19 +3,16 @@
 <h1>Recipes</h1>
 
 <p>
-    <a asp-action="Create">Create recipe</a>
-    <a asp-controller="Matcher" asp-action="Index">Choose pantry</a>
+    <a class="btn" asp-action="Create">Create recipe</a>
+    <a class="btn" asp-controller="Matcher" asp-action="Index">Find a match</a>
 </p>
 
-<ul>
-    @foreach (var recipe in Model)
-    {
-        <p>
-            @recipe.Name
-            <a asp-action="Details" asp-route-id="@recipe.Id">Details</a>
-            <a asp-action="Edit" asp-route-id="@recipe.Id">Edit</a>
-            <a asp-action="Delete" asp-route-id="@recipe.Id">Delete</a>
-        </p>
-    }
-</ul>
-
+@foreach (var recipe in Model)
+{
+    <p>
+        @recipe.Name
+        <a class="btn" asp-action="Details" asp-route-id="@recipe.Id">Details</a>
+        <a class="btn" asp-action="Edit" asp-route-id="@recipe.Id">Edit</a>
+        <a class="btn" asp-action="Delete" asp-route-id="@recipe.Id">Delete</a>
+    </p>
+}
