@@ -1,37 +1,20 @@
 using System.Net;
-using System.Text.RegularExpressions;
 using RecipeMatcher.Web.Data;
 
 namespace RecipeMatcher.Web.Tests.IntegrationTests;
 
-public class CreateRecipeValidationTests : IClassFixture<CustomWebApplicationFactory>
+public class CreateRecipeValidationTests : IntegrationTestBase
 {
-    private readonly CustomWebApplicationFactory _factory;
-    private readonly HttpClient _client;
-
-    public CreateRecipeValidationTests(CustomWebApplicationFactory factory)
+    public CreateRecipeValidationTests(CustomWebApplicationFactory factory) : base(factory)
     {
-        _factory = factory;
-        _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task Post_Creates_with_empty_name_shows_error_and_does_not_save()
     {
-        int countBefore;
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await db.Database.EnsureCreatedAsync();
-            countBefore = db.Recipes.Count();
-        }
+        await ResetDatabaseAsync();
 
-        var getResponse = await _client.GetAsync("/recipes/create");
-        getResponse.EnsureSuccessStatusCode();
-        var createHtml = await getResponse.Content.ReadAsStringAsync();
-
-        var token = GetAntiforgeryToken(createHtml);
-
+        var token = await GetAntiforgeryTokenAsync("/recipes/create");
         var form = new Dictionary<string, string>
         {
             ["Name"] = "",
@@ -39,9 +22,9 @@ public class CreateRecipeValidationTests : IClassFixture<CustomWebApplicationFac
             ["__RequestVerificationToken"] = token
         };
 
-        var postResponse = await _client.PostAsync(
+        var postResponse = await Client.PostAsync(
             "/recipes/create",
-            new FormUrlEncodedContent(form));
+            Form(form));
 
         var html = await postResponse.Content.ReadAsStringAsync();
 
@@ -53,22 +36,107 @@ public class CreateRecipeValidationTests : IClassFixture<CustomWebApplicationFac
             || html.Contains("validation", StringComparison.OrdinalIgnoreCase),
             "Expected a validation error in the HTML");
 
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var countAfter = db.Recipes.Count();
-            Assert.Equal(countBefore, countAfter);
-        }
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Equal(0, db.Recipes.Count());
+
     }
 
-    private static string GetAntiforgeryToken(string html)
+    [Fact]
+    public async Task Post_Creates_with_too_long_name_shows_error_and_does_not_save()
     {
-        var match = Regex.Match(
-            html,
-            @"name=""__RequestVerificationToken""[^>]*value=""([^""]+)""",
-            RegexOptions.IgnoreCase);
+        await ResetDatabaseAsync();
 
-        Assert.True(match.Success, "Create page did not contain an antiforgery token.");
-        return match.Groups[1].Value;
+        var token = await GetAntiforgeryTokenAsync("/recipes/create");
+        var form = new Dictionary<string, string>
+        {
+            ["Name"] = new string('A', 300),
+            ["PreparationMinutes"] = "20",
+            ["__RequestVerificationToken"] = token
+        };
+
+        var postResponse = await Client.PostAsync("/recipes/create", Form(form));
+        var html = await postResponse.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, postResponse.StatusCode);
+        Assert.True(
+            html.Contains("maximum", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("max length", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("too long", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("characters", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("length", StringComparison.OrdinalIgnoreCase),
+            "Expected a max-length validation error in the HTML");
+
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Equal(0, db.Recipes.Count());
     }
+
+    [Fact]
+    public async Task Post_Creates_with_invalid_preparation_time_shows_error_and_does_not_save()
+    {
+        await ResetDatabaseAsync();
+
+        var token = await GetAntiforgeryTokenAsync("/recipes/create");
+        var form = new Dictionary<string, string>
+        {
+            ["Name"] = "Toast",
+            ["PreparationMinutes"] = "-5",
+            ["__RequestVerificationToken"] = token
+        };
+
+        var postResponse = await Client.PostAsync("/recipes/create", Form(form));
+        var html = await postResponse.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, postResponse.StatusCode);
+        Assert.True(
+            html.Contains("PreparationMinutes", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("range", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("invalid", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("greater", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("must be", StringComparison.OrdinalIgnoreCase),
+            "Expected a preparation-time validation error in the HTML");
+
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Equal(0, db.Recipes.Count());
+    }
+
+      [Fact]
+    public async Task Get_Create_returns_ok_and_form()
+    {
+        await ResetDatabaseAsync();
+
+        var response = await Client.GetAsync("/recipes/create");
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("/recipes/create", html, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Name", html);
+        Assert.Contains("PreparationMinutes", html);
+    }
+
+     [Fact]
+    public async Task Post_Create_valid_recipe_redirects_and_saves()
+    {
+        await ResetDatabaseAsync();
+
+        var token = await GetAntiforgeryTokenAsync("/recipes/create");
+        var form = new Dictionary<string, string>
+        {
+            ["Name"] = "Valid pie",
+            ["PreparationMinutes"] = "20",
+            ["__RequestVerificationToken"] = token
+        };
+
+        var response = await NoRedirectClient.PostAsync("/recipes/create", Form(form));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.NotNull(response.Headers.Location);
+
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Contains(db.Recipes, r => r.Name == "Valid pie");
+    }
+
 }

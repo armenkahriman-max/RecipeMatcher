@@ -1,38 +1,21 @@
 using System.Net;
-using RecipeMatcher.Web.Data;
-using RecipeMatcher.Web.Models;
 
 namespace RecipeMatcher.Web.Tests.IntegrationTests;
 
-public class RecipesPageTests : IClassFixture<CustomWebApplicationFactory>
+public class RecipesPageTests : IntegrationTestBase
 {
-    private readonly CustomWebApplicationFactory _factory;
-    private readonly HttpClient _client;
-
-    public RecipesPageTests(CustomWebApplicationFactory factory)
+    public RecipesPageTests(CustomWebApplicationFactory factory) : base(factory)
     {
-        _factory = factory;
-        _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task Get_recipes_retruns_ok_and_contains_inserted_recipe()
     {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await ResetDatabaseAsync();
+        await AddRecipeAsync("Test Baklava", 30);
 
-        await db.Database.EnsureCreatedAsync();
 
-        var recipe = new Recipe
-        {
-            Name = "Test Baklava",
-            PreparationMinutes = 30
-        };
-
-        db.Recipes.Add(recipe);
-        await db.SaveChangesAsync();
-
-        var response = await _client.GetAsync("/recipes");
+        var response = await Client.GetAsync("/recipes");
         var html = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
